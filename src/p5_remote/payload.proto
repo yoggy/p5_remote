@@ -1,0 +1,7 @@
+option java_package = "remote";
+option java_outer_classname = "Payload";
+
+message Data {
+	required string name = 1;
+	required bytes jpeg = 2;
+}
