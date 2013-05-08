@@ -51,7 +51,7 @@ server
   void draw() {
     img = server.getPImage("publisher_name");
     if (img != null) {
-      image(img, 0, 0, );
+      image(img, 0, 0);
       g.removeCache(img); // issue 1391 : https://github.com/processing/processing/issues/1391
     }
   }
