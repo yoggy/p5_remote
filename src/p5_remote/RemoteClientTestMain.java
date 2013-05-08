@@ -30,7 +30,8 @@ public class RemoteClientTestMain extends PApplet {
 		text("frameCount=" + frameCount, 10, 16);
 		text("frameRate=" + frameRate, 10, 32);
 		text("publishFPS=" + remote.getPublishFps(), 10, 48);
-		text("lastPublishStatus=" + remote.getLastPublishStatus(), 10, 64);
+		text("publishBPS=" + remote.getPublishBpsStr(), 10, 64);
+		text("lastPublishStatus=" + remote.getLastPublishStatus(), 10, 80);
 
 		remote.publish();
 	}

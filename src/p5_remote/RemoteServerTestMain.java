@@ -11,6 +11,7 @@ public class RemoteServerTestMain extends PApplet {
 	public void setup() {
 		size(320, 240);
 		server = new RemoteServer(this, 12345);
+		server.setTimeout(1000); // ms
 		server.start();
 	}
 
@@ -22,6 +23,11 @@ public class RemoteServerTestMain extends PApplet {
 			// issue 1391 : https://github.com/processing/processing/issues/1391
 			g.removeCache(img); 
 		}
+		
+		text("fps=" + server.getFps("test_name"), 10, 20);
+		text("bps=" + server.getBpsStr("test_name"), 10, 40);
+		text("last_update_time=" + server.getLastUpdateTime("test_name"), 10, 60);
+		text("is_update=" + server.isUpdate("test_name"), 10, 80);
 	}
 
 	public static void main(String[] args) {

@@ -23,7 +23,8 @@ class RemoteChildThread extends Thread {
 	OutputStream os;
 	
 	FPSCounter fps_counter = new FPSCounter("update_fps");
-
+	BPSCounter bps_counter = new BPSCounter("receive_data_bps");
+	
 	public RemoteChildThread(RemoteServer parent, Socket socket) {
 		this.parent = parent;
 		this.socket = socket;
@@ -106,7 +107,9 @@ class RemoteChildThread extends Thread {
 		
 		// for debug...
 		fps_counter.check();
-		parent.setUpdateFps(name, fps_counter.getFPS());
+		parent.setFps(name, fps_counter.getFPS());
+		bps_counter.check(payload.length);
+		parent.setBps(name, bps_counter.getBPS());
 		
 		return true;
 	}
@@ -144,11 +147,28 @@ public class RemoteServer {
 	
 	HashMap<String, PImage> pimage_map = new HashMap<String, PImage>();
 	HashMap<String, Float>  fps_map = new HashMap<String, Float>();
+	HashMap<String, Float>  bps_map = new HashMap<String, Float>();
 	HashMap<String, Long>   last_update_time_map = new HashMap<String, Long>();
+
+	int timeout = 1000;
 	
 	public RemoteServer(PApplet papplet, int listen_port) {
 		this.papplet = papplet;
 		this.listen_port = listen_port;
+	}
+
+	public void setTimeout(int ms) {
+		this.timeout = ms;
+	}
+
+	public boolean isUpdate(String name) {
+		long t = getLastUpdateTime(name);
+		if (t == 0) return false;
+		
+		long diff = System.currentTimeMillis() - t;
+		if (diff > timeout) return false;
+		
+		return true;
 	}
 
 	protected void setLastUpdateTime(String name, Long time) {
@@ -156,17 +176,34 @@ public class RemoteServer {
 	}
 	
 	public long getLastUpdateTime(String name) {
-		if (last_update_time_map.containsKey(name)) return 0L;
+		if (!last_update_time_map.containsKey(name)) return 0L;
 		return last_update_time_map.get(name);
 	}
 	
-	protected void setUpdateFps(String name, float fps) {
+	protected void setFps(String name, float fps) {
 		fps_map.put(name, fps);
 	}
 
-	public float getUpdateFps(String name) {
-		if (fps_map.containsKey(name)) return 0.0f;
+	public float getFps(String name) {
+		if (!fps_map.containsKey(name)) return 0.0f;
+		if (!isUpdate(name)) return 0.0f;
 		return fps_map.get(name);
+	}
+
+	protected void setBps(String name, float bps) {
+		bps_map.put(name, bps);
+	}
+
+	public float getBps(String name) {
+		if (!bps_map.containsKey(name)) return 0.0f;
+		if (!isUpdate(name)) return 0.0f;
+		return bps_map.get(name);
+	}
+
+	public String getBpsStr(String name) {
+		if (!bps_map.containsKey(name)) return "0bps";
+		if (!isUpdate(name)) return "0bps";
+		return BPSCounter.convertBPS2Str(bps_map.get(name));
 	}
 
 	public int getLietenPort() {
@@ -212,5 +249,4 @@ public class RemoteServer {
 			return;
 		pimage_map.put(name, pimage);
 	}
-
 }

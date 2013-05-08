@@ -29,6 +29,7 @@ class RemoteClientThread extends Thread{
 	boolean update_payload = false;
 	
 	FPSCounter fps_counter = new FPSCounter("publish_fps");
+	BPSCounter bps_counter = new BPSCounter("public_bps");
 	
 	public RemoteClientThread(String host, int port) {
 		this.host = host;
@@ -43,12 +44,21 @@ class RemoteClientThread extends Thread{
 		return fps_counter.getFPS();
 	}
 
+	public float getPublishBps() {
+		return bps_counter.getBPS();
+	}
+
+	protected void clearStatus() {
+		last_publish_status = false;
+		fps_counter.clear();
+		bps_counter.clear();
+	}
+	
 	public void run() {
 		while(!break_flag) {
 			// check payload
 			if (payload == null) {
-				last_publish_status = false;
-				fps_counter.clear();
+				clearStatus();
 				try {
 					sleep(retry_interval_time);
 				} catch (InterruptedException e) {
@@ -58,8 +68,7 @@ class RemoteClientThread extends Thread{
 			
 			// check socket status
 			if (!openSocket()) {
-				last_publish_status = false;
-				fps_counter.clear();
+				clearStatus();
 				try {
 					sleep(retry_interval_time);
 				} catch (InterruptedException e) {
@@ -91,12 +100,12 @@ class RemoteClientThread extends Thread{
 				last_publish_status = true;
 				update_payload = false;
 				fps_counter.check();
+				bps_counter.check(bb.capacity());
 			}
 			catch(Exception e) {
 				closeSocket();
 				e.printStackTrace();
-				last_publish_status = false;
-				fps_counter.clear();
+				clearStatus();
 			}
 			System.gc();
 		}
@@ -148,6 +157,10 @@ class RemoteClientThread extends Thread{
 		catch(Exception e) {
 		}
 	}
+
+	public String getPublishBpsStr() {
+		return bps_counter.getBpsStr();
+	}
 }
 
 public class Remote {
@@ -177,6 +190,14 @@ public class Remote {
 	
 	public float getPublishFps() {
 		return thread.getPublishFps();
+	}
+	
+	public float getPublishBps() {
+		return thread.getPublishBps();
+	}
+
+	public String getPublishBpsStr() {
+		return thread.getPublishBpsStr();
 	}
 	
 	public void publish() {
