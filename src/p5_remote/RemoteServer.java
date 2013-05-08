@@ -16,13 +16,15 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import remote.Payload;
 
-class RemoteClientThread extends Thread {
+class RemoteChildThread extends Thread {
 	RemoteServer parent;
 	Socket socket;
 	InputStream is;
 	OutputStream os;
+	
+	FPSCounter fps_counter = new FPSCounter("update_fps");
 
-	public RemoteClientThread(RemoteServer parent, Socket socket) {
+	public RemoteChildThread(RemoteServer parent, Socket socket) {
 		this.parent = parent;
 		this.socket = socket;
 		try {
@@ -70,7 +72,7 @@ class RemoteClientThread extends Thread {
 
 				// decode
 				decode(payload, read_size);
-
+				
 			} catch (Exception e) {
 				break;
 			}
@@ -99,6 +101,13 @@ class RemoteClientThread extends Thread {
 		PImage pimage = PImageUtils.toPImage(pd.getJpeg().toByteArray());
 		parent.setPImage(name, pimage);
 
+		// set update time
+		parent.setLastUpdateTime(name, System.currentTimeMillis());
+		
+		// for debug...
+		fps_counter.check();
+		parent.setUpdateFps(name, fps_counter.getFPS());
+		
 		return true;
 	}
 }
@@ -118,7 +127,7 @@ class RemoteServerThread extends Thread {
 		while (!break_flag) {
 			try {
 				Socket client = server_socket.accept();
-				RemoteClientThread t = new RemoteClientThread(parent, client);
+				RemoteChildThread t = new RemoteChildThread(parent, client);
 				t.start();
 			} catch (IOException e) {
 				break_flag = true;
@@ -132,11 +141,32 @@ public class RemoteServer {
 	int listen_port;
 
 	RemoteServerThread thread;
+	
 	HashMap<String, PImage> pimage_map = new HashMap<String, PImage>();
-
+	HashMap<String, Float>  fps_map = new HashMap<String, Float>();
+	HashMap<String, Long>   last_update_time_map = new HashMap<String, Long>();
+	
 	public RemoteServer(PApplet papplet, int listen_port) {
 		this.papplet = papplet;
 		this.listen_port = listen_port;
+	}
+
+	protected void setLastUpdateTime(String name, Long time) {
+		last_update_time_map.put(name, time);
+	}
+	
+	public long getLastUpdateTime(String name) {
+		if (last_update_time_map.containsKey(name)) return 0L;
+		return last_update_time_map.get(name);
+	}
+	
+	protected void setUpdateFps(String name, float fps) {
+		fps_map.put(name, fps);
+	}
+
+	public float getUpdateFps(String name) {
+		if (fps_map.containsKey(name)) return 0.0f;
+		return fps_map.get(name);
 	}
 
 	public int getLietenPort() {
@@ -182,4 +212,5 @@ public class RemoteServer {
 			return;
 		pimage_map.put(name, pimage);
 	}
+
 }
