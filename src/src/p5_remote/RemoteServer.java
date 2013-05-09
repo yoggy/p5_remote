@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.Vector;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -101,6 +102,7 @@ class RemoteChildThread extends Thread {
 		try {
 			pd = Payload.Data.parseFrom(payload);
 		} catch (InvalidProtocolBufferException e) {
+			System.err.println("InvalidProtocolBufferException : payload.length=" + payload.length);
 			e.printStackTrace();
 			return false;
 		}
@@ -178,7 +180,7 @@ public class RemoteServer {
 		return this.read_interval_time;
 	}
 	
-	public boolean isUpdate(String name) {
+	public boolean isActive(String name) {
 		long t = getLastUpdateTime(name);
 		if (t == 0) return false;
 		
@@ -203,8 +205,19 @@ public class RemoteServer {
 
 	public float getFps(String name) {
 		if (!fps_map.containsKey(name)) return 0.0f;
-		if (!isUpdate(name)) return 0.0f;
+		if (!isActive(name)) return 0.0f;
 		return fps_map.get(name);
+	}
+
+	public float getAverageFps() {
+		float total_fps = 0;
+		String names [] = getNames();
+		if (names == null || names.length == 0) return 0.0f;
+		
+		for (int i = 0; i < names.length; ++i) {
+			total_fps += getFps(names[i]);
+		}
+		return total_fps / names.length;
 	}
 
 	protected void setBps(String name, float bps) {
@@ -213,14 +226,42 @@ public class RemoteServer {
 
 	public float getBps(String name) {
 		if (!bps_map.containsKey(name)) return 0.0f;
-		if (!isUpdate(name)) return 0.0f;
+		if (!isActive(name)) return 0.0f;
 		return bps_map.get(name);
 	}
 
 	public String getBpsStr(String name) {
-		if (!bps_map.containsKey(name)) return "0bps";
-		if (!isUpdate(name)) return "0bps";
-		return BPSCounter.convertBPS2Str(bps_map.get(name));
+		return BPSCounter.convertBPS2Str(getBps(name));
+	}
+
+	public float getTotalBps() {
+		float total_bps = 0;
+		String names [] = getNames();
+		
+		for (int i = 0; i < names.length; ++i) {
+			total_bps += getBps(names[i]);
+		}
+		return total_bps;
+	}
+	
+	public String getTotalBpsStr() {
+		return BPSCounter.convertBPS2Str(getTotalBps());
+	}
+
+	public String [] getActiveConnectionNames() {
+		String names [] = getNames();
+		Vector<String> active_names = new Vector<String>();
+		
+		for (int i = 0; i < names.length; ++i) {
+			if (isActive(names[i])) {
+				active_names.add(names[i]);
+			}
+		}
+		return active_names.toArray(new String[active_names.size()]);
+	}
+	
+	public int getActiveConnectionNum() {
+		return getActiveConnectionNames().length;
 	}
 
 	public int getLietenPort() {
@@ -266,4 +307,5 @@ public class RemoteServer {
 			return;
 		pimage_map.put(name, pimage);
 	}
+
 }
