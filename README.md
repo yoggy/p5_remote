@@ -20,7 +20,7 @@ client
     
     // setup Remote instance
     //
-    //   remote = new Remote(PApplet a, String publisher_name, String host, int port);
+    //   Remote(PApplet a, String publisher_name, String host, int port)
     //
     remote = new Remote(this, "publisher_name", "192.168.1.123", 12345);
   }
@@ -46,6 +46,9 @@ server
     size(640, 480);
     
     // start server
+    // 
+    //   RemoteServer(PApplet a, int listen_port)
+    // 
     server = new RemoteServer(this, 12345);
     server.start();
   }
