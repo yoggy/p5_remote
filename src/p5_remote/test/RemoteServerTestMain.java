@@ -1,5 +1,6 @@
-package p5_remote;
+package p5_remote.test;
 
+import p5_remote.RemoteServer;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -31,6 +32,6 @@ public class RemoteServerTestMain extends PApplet {
 	}
 
 	public static void main(String[] args) {
-		PApplet.main(new String[] { "p5_remote.RemoteServerTestMain" });
+		PApplet.main(new String[] { "p5_remote.test.RemoteServerTestMain" });
 	}
 }

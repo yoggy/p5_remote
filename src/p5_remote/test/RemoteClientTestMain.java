@@ -1,5 +1,6 @@
-package p5_remote;
+package p5_remote.test;
 
+import p5_remote.Remote;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -37,7 +38,7 @@ public class RemoteClientTestMain extends PApplet {
 	}
 
 	public static void main(String[] args) {
-		PApplet.main(new String[] { "p5_remote.RemoteClientTestMain" });
+		PApplet.main(new String[] { "p5_remote.test.RemoteClientTestMain" });
 	}
 
 	class SampleStopWatch {

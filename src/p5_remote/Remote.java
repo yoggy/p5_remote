@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import p5_remote.utils.BPSCounter;
+import p5_remote.utils.FPSCounter;
+import p5_remote.utils.PImageUtils;
 import processing.core.PApplet;
 import processing.core.PImage;
 import remote.Payload;

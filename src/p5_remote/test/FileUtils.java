@@ -1,4 +1,4 @@
-package p5_remote;
+package p5_remote.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

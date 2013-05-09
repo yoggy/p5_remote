@@ -6,8 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import p5_remote.FileUtils;
-import p5_remote.PImageUtils;
+import p5_remote.utils.PImageUtils;
 import processing.core.PImage;
 import remote.Payload;
 
