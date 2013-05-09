@@ -42,7 +42,7 @@ public class BPSCounter {
 			long diff = System.currentTimeMillis() - start_time;
 
 			float t = diff / 1000.0f;
-			bps = total_bytes / t;
+			bps = total_bytes * 8 / t; // converty byte -> bits
 			
 			start_time = System.currentTimeMillis();
 			count = 0;
