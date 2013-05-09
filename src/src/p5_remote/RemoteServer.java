@@ -76,7 +76,8 @@ class RemoteChildThread extends Thread {
 				}
 
 				// decode
-				decode(payload, read_size);
+				boolean rv = decode(payload, read_size);
+				if (rv == false) break; // close connection if failed decoding
 				
 			} catch (Exception e) {
 				break;
