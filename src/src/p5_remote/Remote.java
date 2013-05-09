@@ -27,6 +27,8 @@ class RemoteClientThread extends Thread{
 	boolean last_publish_status = false;
 
 	int retry_interval_time = 1000;
+
+	int publish_interval_time = 10;
 	
 	byte [] payload = null;
 	boolean update_payload = false;
@@ -51,6 +53,14 @@ class RemoteClientThread extends Thread{
 		return bps_counter.getBPS();
 	}
 
+	public int getPublishIntervalTime() {
+		return publish_interval_time;
+	}
+	
+	public void setPublishIntrvalTime(int ms) {
+		this.publish_interval_time = ms;
+	}
+	
 	protected void clearStatus() {
 		last_publish_status = false;
 		fps_counter.clear();
@@ -187,6 +197,14 @@ public class Remote {
 		this.jpeg_quality = jpeg_quality;
 	}
 
+	public int getPublishIntervalTime() {
+		return thread.getPublishIntervalTime();
+	}
+	
+	public void setPublishIntrvalTime(int ms) {
+		thread.setPublishIntrvalTime(ms);
+	}
+	
 	public boolean getLastPublishStatus() {
 		return thread.getLastPublishStatus();
 	}

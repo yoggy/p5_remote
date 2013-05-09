@@ -80,6 +80,11 @@ class RemoteChildThread extends Thread {
 			} catch (Exception e) {
 				break;
 			}
+			
+			try {
+				sleep(parent.getReadIntervalTime());
+			} catch (InterruptedException e) {
+			}
 		}
 
 		try {
@@ -154,6 +159,7 @@ public class RemoteServer {
 	HashMap<String, Long>   last_update_time_map = new HashMap<String, Long>();
 
 	int timeout = 1000;
+	int read_interval_time = 10;
 	
 	public RemoteServer(PApplet papplet, int listen_port) {
 		this.papplet = papplet;
@@ -164,6 +170,14 @@ public class RemoteServer {
 		this.timeout = ms;
 	}
 
+	public void setReadIntervalTime(int ms) {
+		this.read_interval_time = ms;
+	}
+	
+	public int getReadIntervalTime() {
+		return this.read_interval_time;
+	}
+	
 	public boolean isUpdate(String name) {
 		long t = getLastUpdateTime(name);
 		if (t == 0) return false;
