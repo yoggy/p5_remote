@@ -54,7 +54,7 @@ server
   }
   
   void draw() {
-    img = server.getPImage("publisher_name");
+    img = server.getPImage("publisher_name"); // get the sketch image from client
     if (img != null) {
       image(img, 0, 0);
       g.removeCache(img); // issue 1391 : https://github.com/processing/processing/issues/1391
