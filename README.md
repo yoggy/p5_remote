@@ -1,7 +1,6 @@
 p5_remote
 =========
-
-p5_remote is simple remote display library for Processsing, like AirPlay, Miracast... 
+p5_remote is simple remote display library for Processing, like AirPlay, Miracast... 
 
 ![system abstract](fig01.png)
 
