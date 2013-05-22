@@ -13,6 +13,7 @@ public class RemoteClientTestMain extends PApplet {
 	public void setup() {
 		size(640, 480);
 		remote = new Remote(this, "test_name", "127.0.0.1", 12345);
+		remote.setPublishScale(0.5f);
 		
 		stop_watch = new SampleStopWatch();
 		stop_watch.center.x = width / 2;

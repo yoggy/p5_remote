@@ -15,7 +15,7 @@ import remote.Payload;
 
 import com.google.protobuf.ByteString;
 
-class RemoteClientThread extends Thread{
+class RemoteClientThread extends Thread {
 	String host;
 	int port;
 
@@ -27,20 +27,19 @@ class RemoteClientThread extends Thread{
 	boolean last_publish_status = false;
 
 	int retry_interval_time = 1000;
-
 	int publish_interval_time = 10;
-	
-	byte [] payload = null;
+
+	byte[] payload = null;
 	boolean update_payload = false;
-	
+
 	FPSCounter fps_counter = new FPSCounter("publish_fps");
 	BPSCounter bps_counter = new BPSCounter("public_bps");
-	
+
 	public RemoteClientThread(String host, int port) {
 		this.host = host;
 		this.port = port;
 	}
-	
+
 	public boolean getLastPublishStatus() {
 		return last_publish_status;
 	}
@@ -56,19 +55,19 @@ class RemoteClientThread extends Thread{
 	public int getPublishIntervalTime() {
 		return publish_interval_time;
 	}
-	
+
 	public void setPublishIntrvalTime(int ms) {
 		this.publish_interval_time = ms;
 	}
-	
+
 	protected void clearStatus() {
 		last_publish_status = false;
 		fps_counter.clear();
 		bps_counter.clear();
 	}
-	
+
 	public void run() {
-		while(!break_flag) {
+		while (!break_flag) {
 			// check payload
 			if (payload == null) {
 				clearStatus();
@@ -78,7 +77,7 @@ class RemoteClientThread extends Thread{
 				}
 				continue;
 			}
-			
+
 			// check socket status
 			if (!openSocket()) {
 				clearStatus();
@@ -88,7 +87,7 @@ class RemoteClientThread extends Thread{
 				}
 				continue;
 			}
-			
+
 			// payload update check
 			if (update_payload == false) {
 				try {
@@ -97,25 +96,25 @@ class RemoteClientThread extends Thread{
 				}
 				continue;
 			}
-			
+
 			// send packet
 			try {
 				// build packet data
-				ByteBuffer bb = ByteBuffer.allocate(4 + 4 + payload.length).order(ByteOrder.LITTLE_ENDIAN);
+				ByteBuffer bb = ByteBuffer.allocate(4 + 4 + payload.length)
+						.order(ByteOrder.LITTLE_ENDIAN);
 				bb.put("REMT".getBytes(), 0, 4);
-				bb.putInt((int)payload.length);
+				bb.putInt((int) payload.length);
 				bb.put(payload, 0, payload.length);
 
 				// write packet
 				os.write(bb.array(), 0, bb.capacity());
 				os.flush();
-				
+
 				last_publish_status = true;
 				update_payload = false;
 				fps_counter.check();
 				bps_counter.check(bb.capacity());
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				closeSocket();
 				e.printStackTrace();
 				clearStatus();
@@ -130,12 +129,14 @@ class RemoteClientThread extends Thread{
 	}
 
 	private boolean isOpenSocket() {
-		if (socket == null || os == null || is == null) return false;
+		if (socket == null || os == null || is == null)
+			return false;
 		return true;
 	}
 
 	private boolean openSocket() {
-		if (isOpenSocket()) return true;
+		if (isOpenSocket())
+			return true;
 
 		try {
 			socket = new Socket(host, port);
@@ -152,22 +153,19 @@ class RemoteClientThread extends Thread{
 		try {
 			is.close();
 			is = null;
+		} catch (Exception e) {
 		}
-		catch(Exception e) {
-		}
-		
+
 		try {
 			os.close();
 			os = null;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 		}
 
 		try {
 			socket.close();
 			socket = null;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 		}
 	}
 
@@ -180,8 +178,11 @@ public class Remote {
 	PApplet papplet;
 	String name = "remote.publisher.default_name";
 	int jpeg_quality = 90;
-	RemoteClientThread thread;	
-	
+	RemoteClientThread thread;
+
+	float publish_scale = 1.0f;
+	PImage resize_img;
+
 	public Remote(PApplet papplet, String name, String host, int port) {
 		this.papplet = papplet;
 		this.name = name;
@@ -200,19 +201,27 @@ public class Remote {
 	public int getPublishIntervalTime() {
 		return thread.getPublishIntervalTime();
 	}
-	
+
 	public void setPublishIntrvalTime(int ms) {
 		thread.setPublishIntrvalTime(ms);
 	}
-	
+
+	public float getPublishScale() {
+		return this.publish_scale;
+	}
+
+	public void setPublishScale(float scale) {
+		this.publish_scale = scale;
+	}
+
 	public boolean getLastPublishStatus() {
 		return thread.getLastPublishStatus();
 	}
-	
+
 	public float getPublishFps() {
 		return thread.getPublishFps();
 	}
-	
+
 	public float getPublishBps() {
 		return thread.getPublishBps();
 	}
@@ -220,20 +229,33 @@ public class Remote {
 	public String getPublishBpsStr() {
 		return thread.getPublishBpsStr();
 	}
-	
+
 	public void publish() {
 		// create jpeg byte array
 		PImage img = papplet.get();
 		img.updatePixels();
-		byte [] jpeg_data = PImageUtils.toJpegByteArray(img, jpeg_quality);
 		
+		resize_img = img;
+		if (publish_scale != 1.0f) {
+			if (resize_img == null || resize_img.width != img.width
+					|| resize_img.height != img.height) {
+				resize_img = new PImage(img.width, img.height);
+				resize_img.copy(0, 0, img.width, img.height, 0, 0, img.width, img.height);
+			}
+			resize_img.resize((int) (img.width * publish_scale),
+					(int) (img.height * publish_scale));
+		}
+
+		byte[] jpeg_data = PImageUtils
+				.toJpegByteArray(resize_img, jpeg_quality);
+
 		// serialize to Payload
 		Payload.Data.Builder builder = Payload.Data.newBuilder();
 		builder.setName(name);
 		builder.setJpeg(ByteString.copyFrom(jpeg_data));
-		byte [] payload = builder.build().toByteArray();
+		byte[] payload = builder.build().toByteArray();
 
 		// set payload
-		thread.setPayload(payload);		
+		thread.setPayload(payload);
 	}
 }
