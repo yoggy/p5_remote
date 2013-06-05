@@ -1,6 +1,7 @@
 p5_remote
 =========
-p5_remote is simple remote display library for Processing, like AirPlay, Miracast... 
+
+p5_remote is simple remote display library for Processsing, like AirPlay, Miracast... 
 
 ![system abstract](fig01.png)
 
@@ -53,7 +54,7 @@ server
   }
   
   void draw() {
-    img = server.getPImage("publisher_name"); // get the sketch image from client
+    img = server.getPImage("publisher_name");
     if (img != null) {
       image(img, 0, 0);
       g.removeCache(img); // issue 1391 : https://github.com/processing/processing/issues/1391

@@ -12,6 +12,7 @@ import p5_remote.utils.PImageUtils;
 import processing.core.PApplet;
 import processing.core.PImage;
 import remote.Payload;
+import remote.Payload.Data;
 
 import com.google.protobuf.ByteString;
 
@@ -114,6 +115,10 @@ class RemoteClientThread extends Thread {
 				update_payload = false;
 				fps_counter.check();
 				bps_counter.check(bb.capacity());
+
+				bb.clear();
+				bb = null;
+				
 			} catch (Exception e) {
 				closeSocket();
 				e.printStackTrace();
@@ -253,7 +258,11 @@ public class Remote {
 		Payload.Data.Builder builder = Payload.Data.newBuilder();
 		builder.setName(name);
 		builder.setJpeg(ByteString.copyFrom(jpeg_data));
-		byte[] payload = builder.build().toByteArray();
+		Data d = builder.build();
+		byte[] payload = d.toByteArray();
+		
+		builder.clear();
+		builder = null;
 
 		// set payload
 		thread.setPayload(payload);
