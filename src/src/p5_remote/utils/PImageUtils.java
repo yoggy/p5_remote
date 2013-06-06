@@ -47,7 +47,12 @@ public class PImageUtils {
 	        ImageWriter iw = ImageIO.getImageWritersByFormatName("jpg").next();
 	        iw.setOutput(ios);
 	        iw.write(null, new IIOImage(buffered_image, null, null), param);		        
-			jpeg_data = bos.toByteArray();						
+			jpeg_data = bos.toByteArray();
+			
+			iw.dispose(); // cause heap overflow, if forget to call dispose() method in Mac...
+			ios.close();
+			bos.close();
+			buffered_image = null;
 		} catch (IOException e) {
 			System.err.println("PImageUtils.toJpegByteArray(): JPEG encode failed...");
 			e.printStackTrace();
